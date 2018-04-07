@@ -18,7 +18,7 @@
         <transition name="fade" :duration="300">
           <i class="fa fa-close" style="position: absolute;top:16px;right: -40px;cursor: pointer;font-size: 18px;"
              v-show="isShowClear"
-             @click="search"></i>
+             @click="clear"></i>
         </transition>
       </div>
     </div>
@@ -61,6 +61,9 @@
         if (this.isShowClear) {
           this.$router.push({path: '/search', query: {w: this.searchWord}})
         }
+      },
+      clear(){
+        this.searchWord = ''
       }
     }
   }
