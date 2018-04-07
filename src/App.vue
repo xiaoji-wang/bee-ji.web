@@ -1,6 +1,8 @@
 <template>
   <div id="app">
+    <!--<transition name="fade" mode="out-in" :duration="500">-->
     <router-view/>
+    <!--</transition>-->
   </div>
 </template>
 
@@ -12,13 +14,13 @@
 
 <style>
   * {
-    color: #e0e0e0;
+    color: #333;
     padding: 0;
     margin: 0;
   }
 
   a {
-    text-decoration-line: none;
+    text-decoration-line: underline;
   }
 
   a:hover {
@@ -29,5 +31,6 @@
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    height: 100%;
   }
 </style>

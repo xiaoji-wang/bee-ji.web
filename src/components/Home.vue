@@ -1,77 +1,65 @@
 <template>
-  <div>
-    <ul style="display: flex;justify-content: flex-end;background: rgba(0,0,0,0.3)">
+  <div style="height: 100%;background: url('../../static/bg2.png') center;" @keyup.enter="search">
+    <ul style="display: flex;justify-content: flex-end;background: rgba(0,0,0,0.8)">
       <li>
-        <a href="javascript:void(0)">
-          <i class="fa fa-user-circle">&nbsp;登录/注册&nbsp;</i>
-        </a>
+        <i class="fa fa-user-circle" style="color: #ccc"></i>
+        <a href="javascript:void(0)" style="color: #ccc">登录</a>
       </li>
     </ul>
-    <transition enter-active-class="animated slideInDown" leave-active-class="animated slideOutUp">
-      <div class="nav" v-show="navShow">
-        <img src="../assets/logo.png" style="border: solid 2px #ccc;border-radius: 60px;padding: 5px;width: 30px;"/>
-      </div>
-    </transition>
-    <div style="text-align: center;margin-top: 50px;">
-      <img src="../assets/logo.png" style="border: solid 4px #ccc;border-radius: 60px;padding: 10px;"/>
+    <div class="logo">
+      <img src="../assets/logo_gray.png" class="animated bounceIn"/>
     </div>
     <div class="search">
-      <h1>{{ hello }}</h1>
-      <input v-model="searchWord" title="search"/>
+      <h1>{{hello}}逗比拯救世界</h1>
+      <div style="position: relative;">
+        <input v-model.trim="searchWord" title="search"/>
+        <i class="fa fa-search" style="position: absolute;top:16px;right: 0;cursor: pointer;font-size: 18px;"
+           @click="search"></i>
+        <transition name="fade" :duration="300">
+          <i class="fa fa-close" style="position: absolute;top:16px;right: -40px;cursor: pointer;font-size: 18px;"
+             v-show="isShowClear"
+             @click="search"></i>
+        </transition>
+      </div>
     </div>
-    <thumbnails ref="thumbnails"/>
-    <b></b>
+    <p style="position: fixed;bottom: 0;text-align: center;width: 100%;padding: 5px;">滇ICP备15001190号-1</p>
   </div>
 </template>
 
 <script>
-  import Thumbnails from './Thumbnails'
-
   export default {
     name: 'home',
-    components: {
-      thumbnails: Thumbnails
-    },
-    mounted() {
-      window.addEventListener('scroll', this.scrollEvent)
-    },
     data() {
       return {
-        searchWord: '',
-        navShow: false
+        searchWord: ''
       }
     },
     computed: {
       hello() {
         let hour = new Date().getHours()
-        if (hour > 0 && hour <= 5) {
-          return '凌晨您想搜索点什么？'
+        if (hour >= 0 && hour <= 5) {
+          return '凌晨了，'
         } else if (hour > 5 && hour <= 11) {
-          return '早上好，您想搜索点什么？'
+          return '早上好，'
         } else if (hour > 11 && hour <= 13) {
-          return '中午好，您想搜索点什么？'
+          return '中午好，'
         } else if (hour > 13 && hour <= 17) {
-          return '下午好，您想搜索点什么？'
+          return '下午好，'
         } else if (hour > 17 && hour <= 19) {
-          return '傍晚了，您想搜索点什么？'
+          return '傍晚了，'
         } else if (hour > 19 && hour <= 24) {
-          return '晚上好，您想搜索点什么？'
+          return '晚上好，'
         }
-        return '逗比拯救世界！'
+        return ''
+      },
+      isShowClear(){
+        return this.searchWord.trim().length > 0
       }
     },
     methods: {
-      scrollEvent() {
-        let scrollTop = document.documentElement.scrollTop
-        let clientHeight = document.documentElement.clientHeight
-        let scrollHeight = document.documentElement.scrollHeight
-        if (scrollTop >= 400 && (!this.navShow)) {
-          this.navShow = true
-        } else if (scrollTop < 400 && (this.navShow)) {
-          this.navShow = false
-        }
-        if (scrollHeight - scrollTop - clientHeight < 100) {
-          this.$refs.thumbnails.loadImage()
+      search(){
+        if (this.isShowClear) {
+          this.$router.push({path: '/search', query: {w: this.searchWord}})
         }
       }
     }
@@ -80,18 +68,19 @@
 
 <style scoped>
   li {
-    padding: 5px;
+    padding: 8px;
     display: inline-block;
   }
 
-  .nav {
-    background: #141414;
-    top: 0;
-    height: 45px;
-    width: 100%;
-    position: fixed;
-    padding: 5px;
-    box-shadow: 0 3px 10px #333;
+  .logo {
+    text-align: center;
+    margin-top: 150px;
+  }
+
+  .logo img {
+    border: solid 4px #333;
+    border-radius: 100px;
+    padding: 10px;
   }
 
   .search {
@@ -100,13 +89,13 @@
   }
 
   h1 {
-    font-weight: lighter;
+    font-weight: normal;
     text-align: center;
   }
 
   input {
     border: none;
-    border-bottom: solid 2px #e0e0e0;
+    border-bottom: solid 2px #333;
     outline: none;
     padding: 8px;
     font-size: 24px;
@@ -114,13 +103,25 @@
     background: none;
   }
 
-  b {
-    background: url('../../static/bg.jpg') center;
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    z-index: -1;
+  @media screen and (max-width: 640px) {
+
+    h1 {
+      font-size: 22px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .logo img {
+      border: solid 4px #333;
+      width: 60px;
+    }
+
+    .search {
+      width: 70%;
+      margin: 50px auto 100px;
+    }
   }
 </style>
