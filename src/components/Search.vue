@@ -2,7 +2,8 @@
   <div style="padding-top: 80px;">
     <div class="nav">
       <router-link :to="{path:'/'}" style="display: inline-block;vertical-align: middle;">
-        <img src="../assets/logo_gray.png" style="border: solid 2px #333;border-radius: 60px;padding: 5px;width: 30px;"/>
+        <img src="../assets/logo_gray.png"
+             style="border: solid 2px #333;border-radius: 60px;padding: 5px;width: 30px;"/>
       </router-link>
       <input/>
       <i class="fa fa-search" style="position: relative;left: -30px;cursor: pointer;font-size: 18px;color: #999;"
@@ -20,6 +21,13 @@
     components: {
       thumbnails: Thumbnails
     },
+    mounted() {
+      this.axios.get('http://www.bee-ji.com:8000/s?w=社会').then((response) => {
+        console.log(response);
+      }).catch(function (error) {
+        console.log(error);
+      });
+    }
   }
 </script>
 
@@ -34,7 +42,7 @@
     box-shadow: 0 1px 10px #ccc;
   }
 
-  .nav input{
+  .nav input {
     font-size: 20px;
     padding: 5px;
     vertical-align: middle;
