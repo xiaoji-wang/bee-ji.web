@@ -52,17 +52,17 @@
         }
         return ''
       },
-      isShowClear(){
+      isShowClear() {
         return this.searchWord.trim().length > 0
       }
     },
     methods: {
-      search(){
+      search() {
         if (this.isShowClear) {
-          this.$router.push({path: '/search', query: {w: this.searchWord}})
+          this.$router.push({path: '/s', query: {w: this.searchWord}})
         }
       },
-      clear(){
+      clear() {
         this.searchWord = ''
       }
     }

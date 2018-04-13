@@ -9,6 +9,6 @@ export default new Router({
   routes: [{
     path: '/', name: 'Home', component: Home
   }, {
-    path: '/search', name: 'Search', component: Search
+    path: '/s', name: 'Search', component: Search
   }]
 })

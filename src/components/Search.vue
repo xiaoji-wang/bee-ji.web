@@ -9,24 +9,33 @@
       <i class="fa fa-search" style="position: relative;left: -30px;cursor: pointer;font-size: 18px;color: #999;"
          @click="search"></i>
     </div>
-    <thumbnails ref="thumbnails"/>
+    <div></div>
   </div>
 </template>
 
 <script>
-  import Thumbnails from './Thumbnails'
-
   export default {
     name: 'search',
-    components: {
-      thumbnails: Thumbnails
+    data() {
+      return {
+        images: []
+      }
     },
     mounted() {
-      this.axios.get('http://www.bee-ji.com:8000/s?w=社会').then((response) => {
-        console.log(response);
+      let params = this.$route.query
+      if (!params['w']) {
+        this.$router.push({path: '/'})
+      }
+      this.axios.get(SERVER_URL + '/s', {params: params}).then((response) => {
+        console.log(response.data)
       }).catch(function (error) {
-        console.log(error);
-      });
+        console.log(error)
+      })
+    },
+    methods: {
+      search() {
+        console.log('search')
+      }
     }
   }
 </script>
