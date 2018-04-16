@@ -1,18 +1,25 @@
 <template>
   <div style="padding-top: 80px;">
-    <div class="nav">
+    <div class="nav" @keyup.enter="search">
       <router-link :to="{path:'/'}" style="display: inline-block;vertical-align: middle;">
         <img src="../assets/logo_gray.png"
              style="border: solid 2px #333;border-radius: 60px;padding: 5px;width: 30px;"/>
       </router-link>
-      <input v-model="queryString"/>
+      <input v-model.trim="searchWord"/>
       <i class="fa fa-search" style="position: relative;left: -30px;cursor: pointer;font-size: 18px;color: #999;"
          @click="search"></i>
     </div>
-    <div>
-      <a v-for="image in rows" :href="imgUrl(image)" target="_blank" :style="imgStyle(image)">
-        <img :src="imgUrl(image)" :alt="image.desc" style="width: 100%;"/>
-      </a>
+    <div class="container">
+      <div v-for="image in rows" class="item">
+        <a :href="imgUrl(image)" target="_blank" :style="imgStyle(image)">
+          <img :src="imgUrl(image)" :alt="image.desc"/>
+        </a>
+        <div class="desc animated">
+          <span>
+            {{image.width}}×{{image.height}}
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -22,7 +29,7 @@
     name: 'search',
     data() {
       return {
-        queryString: '',
+        searchWord: '',
         rows: []
       }
     },
@@ -32,13 +39,8 @@
         this.$router.push({path: '/'})
         return
       }
-      this.queryString = params.w
-      this.axios.get(this.$SERVER_URL + '/s', {params: params}).then((response) => {
-        let arr = response.data
-        this.fillImage(arr.slice(0, 50))
-      }).catch(function (error) {
-        console.log(error)
-      })
+      this.searchWord = params.w
+      this.searchImage(params)
       document.body.style.overflowY = 'scroll'
     },
     computed: {
@@ -48,18 +50,28 @@
     },
     methods: {
       search() {
-        console.log('search')
+        if (this.searchWord.trim().length > 0) {
+          this.$router.push({path: '/s', query: {w: this.searchWord}})
+          this.searchImage({w: this.searchWord})
+        }
       },
       imgUrl(image) {
         return this.$SERVER_URL + '/image/' + image.id
       },
       imgStyle(image) {
         return {
-          width: image.width - 6 + 'px',
-          height: image.height + 'px',
-          display: 'inline-block',
-          padding: '0 3px'
+          width: image.width - 10 + 'px',
+          height: image.height + 'px'
         }
+      },
+      searchImage(params) {
+        this.rows = []
+        this.axios.get(this.$SERVER_URL + '/s', {params: params}).then((response) => {
+          let arr = response.data
+          this.fillImage(arr.slice(0, 50))
+        }).catch(function (error) {
+          console.log(error)
+        })
       },
       fillImage(arr) {
         let clientWidth = document.body.clientWidth
@@ -107,5 +119,50 @@
     border: none;
     width: 400px;
     border-bottom: solid 2px #999;
+  }
+
+  .container {
+    align-items: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .container .item {
+    display: inline-block;
+    position: relative;
+    padding: 5px 5px 0 5px;
+    overflow: hidden;
+  }
+
+  .container .item a {
+    display: block;
+    vertical-align: bottom;
+  }
+
+  .container .item img {
+    width: 100%;
+  }
+
+  .container .item .desc {
+    background: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    bottom: 0;
+    left: 3px;
+    right: 3px;
+    padding: 10px;
+    visibility: hidden;
+    font-size: 14px;
+    color: #ccc;
+  }
+
+  .container .item:hover .desc {
+    animation-duration: 0.3s;
+    animation-fill-mode: both;
+    animation-name: slideInUp;
+    visibility: visible;
+  }
+
+  .container .item .desc span {
+    align-self: flex-start;
   }
 </style>
