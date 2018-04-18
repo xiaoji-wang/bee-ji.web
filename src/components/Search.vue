@@ -12,7 +12,10 @@
     <div class="container">
       <div v-for="image in rows" class="item">
         <a :href="imgUrl(image)" target="_blank" :style="imgStyle(image)">
-          <img :src="imgUrl(image)" :alt="image.desc"/>
+          <img
+            src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg"
+            :lazy-src="imgUrl(image)"
+            :alt="image.desc"/>
         </a>
         <div class="desc animated">
           <span>
