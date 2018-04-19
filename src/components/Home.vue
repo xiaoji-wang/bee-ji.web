@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%;background: url('static/bg2.png') center;" @keyup.enter="search">
+  <div style="height: 100%;background: url('/static/bg2.png') center;" @keyup.enter="search">
     <ul style="display: flex;justify-content: flex-end;background: rgba(0,0,0,0.8)">
       <li style="visibility: hidden;">
         <i class="fa fa-user-circle" style="color: #ccc"></i>
@@ -35,7 +35,7 @@
       }
     },
     mounted() {
-      document.body.style.overflowY = 'auto'
+      // document.body.style.overflowY = 'auto'
     },
     computed: {
       hello() {

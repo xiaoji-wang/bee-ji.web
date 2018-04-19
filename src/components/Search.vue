@@ -1,21 +1,18 @@
 <template>
-  <div style="padding-top: 80px;">
-    <div class="nav" @keyup.enter="search">
+  <div style="height: 100%;">
+    <div class="nav" @keyup.enter="searchButtonEvent">
       <router-link :to="{path:'/'}" style="display: inline-block;vertical-align: middle;">
         <img src="../assets/logo_gray.png"
              style="border: solid 2px #333;border-radius: 60px;padding: 5px;width: 30px;"/>
       </router-link>
       <input v-model.trim="searchWord"/>
       <i class="fa fa-search" style="position: relative;left: -30px;cursor: pointer;font-size: 18px;color: #999;"
-         @click="search"></i>
+         @click="searchButtonEvent"></i>
     </div>
-    <div class="container">
-      <div v-for="image in rows" class="item">
-        <a :href="imgUrl(image)" target="_blank" :style="imgStyle(image)">
-          <img
-            src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg"
-            :lazy-src="imgUrl(image)"
-            :alt="image.desc"/>
+    <div id="container" class="container" v-scroll="autoLoad">
+      <div v-for="image in items" class="item">
+        <a :href="image.src + '.html'" target="_blank" :style="imgStyle(image)">
+          <img :src="image.src" :alt="image.desc"/>
         </a>
         <div class="desc animated">
           <span>
@@ -23,17 +20,26 @@
           </span>
         </div>
       </div>
+      <div class="load" v-if="hasMove">
+        <div class="loader"></div>
+        <div>Loading...</div>
+      </div>
+      <div class="foot" v-if="!hasMove">
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+  const blank = 'data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWNgYGBgAAAABQABh6FO1AAAAABJRU5ErkJggg'
   export default {
     name: 'search',
     data() {
       return {
+        imageIndex: 0,
+        imageArray: [],
         searchWord: '',
-        rows: []
+        items: []
       }
     },
     mounted() {
@@ -44,22 +50,27 @@
       }
       this.searchWord = params.w
       this.searchImage(params)
-      document.body.style.overflowY = 'scroll'
     },
     computed: {
       defaultHeight() {
         return 180
+      },
+      clientWidth() {
+        return document.getElementById('container').clientWidth
+      },
+      clientHeight() {
+        return document.getElementById('container').clientHeight
+      },
+      hasMove() {
+        return this.imageIndex < this.imageArray.length
       }
     },
     methods: {
-      search() {
+      searchButtonEvent() {
         if (this.searchWord.trim().length > 0) {
           this.$router.push({path: '/s', query: {w: this.searchWord}})
           this.searchImage({w: this.searchWord})
         }
-      },
-      imgUrl(image) {
-        return this.$SERVER_URL + '/image/' + image.id
       },
       imgStyle(image) {
         return {
@@ -70,33 +81,61 @@
       searchImage(params) {
         this.rows = []
         this.axios.get(this.$SERVER_URL + '/s', {params: params}).then((response) => {
-          let arr = response.data
-          this.fillImage(arr.slice(0, 50))
+          this.imageArray = response.data
+          this.fillImage()
         }).catch(function (error) {
           console.log(error)
         })
       },
-      fillImage(arr) {
-        let clientWidth = document.body.clientWidth
+      fillImage() {
         let totalWidth = 0
+        let totalHeight = 0
         let images = []
-        for (let i = 0; i < arr.length; i++) {
-          let w = arr[i].width * this.defaultHeight / arr[i].height
-          if (totalWidth + w > clientWidth) {
-            let h = clientWidth * this.defaultHeight / totalWidth
+        for (let i = this.imageIndex; i < this.imageArray.length; i++) {
+          let image = this.imageArray[i]
+          if (totalHeight > this.clientHeight) {
+            break
+          }
+          let w = image.width * this.defaultHeight / image.height
+          if (totalWidth + w > this.clientWidth) {
+            let h = this.clientWidth * this.defaultHeight / totalWidth
             images.forEach((im) => {
               im.width = Math.floor(im.width / im.height * h)
               im.height = Math.floor(h)
-              this.rows.push(JSON.parse(JSON.stringify(im)))
+              this.items.push(JSON.parse(JSON.stringify(im)))
             })
             totalWidth = 0
+            totalHeight += h
             images = []
           } else {
-            images.push({
-              id: arr[i].id, desc: arr[i].desc, width: arr[i].width, height: arr[i].height
-            })
+            images.push(this.createImage(image))
             totalWidth += w
           }
+        }
+        images.forEach((im) => {
+          im.width = Math.floor(im.width / im.height * 180)
+          im.height = 180
+          this.items.push(JSON.parse(JSON.stringify(im)))
+        })
+        this.$nextTick(() => {
+          for (let i = this.imageIndex; i < this.items.length; i++, this.imageIndex++) {
+            this.items[i].src = this.items[i].lazyLoad
+          }
+        })
+      },
+      createImage(im) {
+        return {
+          id: im.id,
+          width: im.width,
+          height: im.height,
+          desc: im.desc,
+          lazyLoad: this.$IMAGE_URL + '/' + im.id,
+          src: blank
+        }
+      },
+      autoLoad(e, position) {
+        if (this.hasMove && document.getElementById('container').scrollHeight - (position.scrollTop + this.clientHeight) < 200) {
+          this.fillImage()
         }
       }
     }
@@ -106,12 +145,8 @@
 <style scoped>
   .nav {
     background: white;
-    top: 0;
-    width: 100%;
-    position: fixed;
     padding: 5px;
     border-bottom: solid 1px #ccc;
-    box-shadow: 0 1px 10px #ccc;
   }
 
   .nav input {
@@ -125,16 +160,20 @@
   }
 
   .container {
-    align-items: flex-end;
-    display: flex;
-    flex-wrap: wrap;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: scroll;
   }
 
   .container .item {
     display: inline-block;
     position: relative;
-    padding: 5px 5px 0 5px;
+    margin: 5px;
     overflow: hidden;
+    box-shadow: 2px 2px 4px #ccc;
   }
 
   .container .item a {
@@ -144,14 +183,15 @@
 
   .container .item img {
     width: 100%;
+    height: 100%;
   }
 
   .container .item .desc {
     background: rgba(0, 0, 0, 0.8);
     position: absolute;
     bottom: 0;
-    left: 3px;
-    right: 3px;
+    left: 0;
+    right: 0;
     padding: 10px;
     visibility: hidden;
     font-size: 14px;
@@ -167,5 +207,58 @@
 
   .container .item .desc span {
     align-self: flex-start;
+  }
+
+  .load {
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .load .loader {
+    margin-right: 20px;
+    font-size: 10px;
+    position: relative;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-left-color: #ffffff;
+    -webkit-animation: load 1.1s infinite linear;
+    animation: load 1.1s infinite linear;
+  }
+
+  .load .loader, .load .loader:after {
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+  }
+
+  @-webkit-keyframes load {
+    0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes load {
+    0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  .foot {
+    height: 64px;
+    border-top: solid 1px #ccc;
   }
 </style>
